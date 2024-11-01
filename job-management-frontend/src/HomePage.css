@@ -1,0 +1,45 @@
+/* HomePage.css */
+.homepage-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  
+  .primary-button,
+  .secondary-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .primary-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .secondary-button {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .primary-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .secondary-button:hover {
+    background-color: #218838;
+  }
+  
