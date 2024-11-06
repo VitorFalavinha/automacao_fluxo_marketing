@@ -2,9 +2,9 @@
 import React from 'react';
 import './JobCard.css';
 
-const JobCard = ({ job, onEdit }) => {
+const JobCard = ({ job, onEdit, className }) => {
   return (
-    <div className="job-card">
+    <div className={`job-card ${className}`}>
       <h3>{job.title}</h3>
       <p><strong>Cliente:</strong> {job.client}</p>
       <p><strong>Status:</strong> {job.status}</p>
@@ -15,3 +15,4 @@ const JobCard = ({ job, onEdit }) => {
 };
 
 export default JobCard;
+

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
-import JobCard from './JobCard'; // Importando o novo componente JobCard
-import './JobList.css'; // Importando o CSS para estilizar os cards
+import JobCard from './JobCard'; 
+import './JobList.css'; 
+import BackButton from './components/BackButton';
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
@@ -9,9 +10,17 @@ const JobList = () => {
 
   useEffect(() => {
     fetch('http://localhost:8000/api/jobs/')
-      .then(response => response.json())
-      .then(data => setJobs(data))
-      .catch(error => console.error('Error fetching jobs:', error));
+      .then((response) => response.json())
+      .then((data) => {
+        // Ordena os jobs: pendentes primeiro, aprovados depois
+        const sortedJobs = data.sort((a, b) => {
+          if (a.status === 'pendente' && b.status === 'aprovado') return -1;
+          if (a.status === 'aprovado' && b.status === 'pendente') return 1;
+          return 0;
+        });
+        setJobs(sortedJobs);
+      })
+      .catch((error) => console.error('Error fetching jobs:', error));
   }, []);
 
   const handleUpdate = (updatedJob) => {
@@ -30,16 +39,26 @@ const JobList = () => {
   };
 
   return (
-    <div className="job-list-container">
-      <h1>Jobs List</h1>
-      <div className="job-list">
-        {jobs.map(job => (
-          <JobCard key={job.id} job={job} onEdit={() => setEditingJob(job)} />
-        ))}
+    <div>
+      <BackButton /> {}
+      <div className="job-list-container">
+        <h1>Jobs List</h1>
+        <div className="job-list">
+          {jobs.map(job => (
+            <JobCard 
+              key={job.id} 
+              job={job} 
+              onEdit={() => setEditingJob(job)} 
+              className={
+                job.status === 'pending' ? 'bg-pending' : job.status === 'approved' ? 'bg-approved' : 'bg-rejected'
+              } 
+            />
+          ))}
+        </div>
+        {editingJob && (
+          <Modal job={editingJob} onClose={() => setEditingJob(null)} onUpdate={handleUpdate} />
+        )}
       </div>
-      {editingJob && (
-        <Modal job={editingJob} onClose={() => setEditingJob(null)} onUpdate={handleUpdate} />
-      )}
     </div>
   );
 };

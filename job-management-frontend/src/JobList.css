@@ -33,3 +33,14 @@ div > ul > li > button {
   gap: 16px;
   justify-content: center;
 }
+
+.bg-pending {
+  background-color: rgb(238, 170, 68); /* Cor para jobs pendentes */
+}
+
+.bg-approved {
+  background-color: rgb(74, 224, 74); /* Cor para jobs aprovados */
+}
+.bg-rejected {
+  background-color: rgb(224, 79, 74); /* Cor para jobs aprovados */
+}
