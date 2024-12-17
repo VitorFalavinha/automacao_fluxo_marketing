@@ -25,3 +25,16 @@
     right: 10px;
   }
   
+  .delete-button {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .delete-button:hover {
+    background-color: #cc0000;
+  }
+  

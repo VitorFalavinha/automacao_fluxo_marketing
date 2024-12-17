@@ -7,56 +7,99 @@ import BackButton from './components/BackButton';
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
   const [editingJob, setEditingJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  // Busca os jobs e ordena por status
   useEffect(() => {
-    fetch('http://localhost:8000/api/jobs/')
-      .then((response) => response.json())
-      .then((data) => {
-        // Ordena os jobs: pendentes primeiro, aprovados depois
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:8000/api/jobs/');
+        if (!response.ok) throw new Error('Erro ao carregar jobs.');
+        
+        const data = await response.json();
         const sortedJobs = data.sort((a, b) => {
-          if (a.status === 'pendente' && b.status === 'aprovado') return -1;
-          if (a.status === 'aprovado' && b.status === 'pendente') return 1;
-          return 0;
+          const order = { pending: 1, approved: 2, rejected: 0 };
+          return order[a.status] - order[b.status];
         });
         setJobs(sortedJobs);
-      })
-      .catch((error) => console.error('Error fetching jobs:', error));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
   }, []);
 
-  const handleUpdate = (updatedJob) => {
-    fetch(`http://localhost:8000/api/jobs/${updatedJob.id}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedJob),
-    })
-      .then(response => response.json())
-      .then(job => {
-        const updatedJobs = jobs.map(j => (j.id === job.id ? job : j));
-        setJobs(updatedJobs);
-        setEditingJob(null); // Fecha o modal após a atualização
-      })
-      .catch(error => console.error('Error updating job:', error));
+  // Atualiza job na API e no estado local
+  const handleUpdate = async (updatedJob) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/jobs/${updatedJob.id}/`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedJob),
+      });
+      if (!response.ok) throw new Error('Erro ao atualizar job.');
+
+      const job = await response.json();
+      setJobs((prevJobs) =>
+        prevJobs.map((j) => (j.id === job.id ? job : j))
+      );
+      setEditingJob(null); // Fecha o modal
+    } catch (err) {
+      console.error('Error updating job:', err.message);
+    }
   };
+
+  // Exclui job na API e no estado local
+  const handleDelete = async (jobId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/jobs/${jobId}/`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Erro ao deletar job.');
+
+      setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
+      setEditingJob(null); // Fecha o modal se estava aberto
+    } catch (err) {
+      console.error('Error deleting job:', err.message);
+    }
+  };
+
+  // Renderiza conteúdo baseado no estado
+  if (loading) return <div>Carregando jobs...</div>;
+  if (error) return <div>Erro: {error}</div>;
 
   return (
     <div>
-      <BackButton /> {}
+      <BackButton />
       <div className="job-list-container">
-        <h1>Jobs List</h1>
+        <h1>Lista de Jobs</h1>
         <div className="job-list">
-          {jobs.map(job => (
-            <JobCard 
-              key={job.id} 
-              job={job} 
-              onEdit={() => setEditingJob(job)} 
+          {jobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              onEdit={() => setEditingJob(job)}
               className={
-                job.status === 'pending' ? 'bg-pending' : job.status === 'approved' ? 'bg-approved' : 'bg-rejected'
-              } 
+                job.status === 'pending' 
+                  ? 'bg-pending' 
+                  : job.status === 'approved' 
+                  ? 'bg-approved' 
+                  : 'bg-rejected'
+              }
             />
           ))}
         </div>
         {editingJob && (
-          <Modal job={editingJob} onClose={() => setEditingJob(null)} onUpdate={handleUpdate} />
+          <Modal
+            job={editingJob}
+            onClose={() => setEditingJob(null)}
+            onUpdate={handleUpdate}
+            onDelete={handleDelete} // Passa a função de exclusão para o modal
+          />
         )}
       </div>
     </div>
