@@ -1,9 +1,16 @@
 from django.urls import path
-from .views import JobCreateView, JobListView, JobUpdateView, JobDeleteView
+from .views import JobCreateView, JobListView, JobUpdateView, JobArchiveView, ArchivedJobListView
 
 urlpatterns = [
-    path('jobs/create/', JobCreateView.as_view(), name='create_job'),  # Rota para criar
-    path('jobs/', JobListView.as_view(), name='list_jobs'),  # Rota para listar jobs
-    path('jobs/<int:pk>/update/', JobUpdateView.as_view(), name='update_job'),  # Rota para atualizar job
-    path('http://localhost:8000/api/jobs/<int:pk>/delete/', JobDeleteView.as_view(), name='delete_job'),  # Rota para deletar job
+     path('api/jobs/<int:pk>/', JobUpdateView.as_view(), name='job-update'),  # Atualizar job com ID
+
+    path('api/jobs/', JobListView.as_view(), name='job-list'),  # Listar jobs
+
+    path('api/jobs/create/', JobCreateView.as_view(), name='job-create'),  
+
+    path('api/jobs/<int:pk>/archive/', JobArchiveView.as_view(), name='archive-job'),
+    
+    path('api/jobs/archived/', ArchivedJobListView.as_view(), name='archived'), 
 ]
+
+

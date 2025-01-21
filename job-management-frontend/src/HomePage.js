@@ -17,6 +17,9 @@ const HomePage = () => {
         <button onClick={() => navigate('/jobs')} className="secondary-button">
           Mostrar jobs em andamento
         </button>
+        <button onClick={() => navigate('/archived-jobs')} className="secondary-button">
+          Mostrar jobs arquivados
+        </button> {/* Botão para acessar jobs arquivados */}
       </div>
     </div>
   );

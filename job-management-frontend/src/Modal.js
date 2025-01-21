@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './Modal.css';
 
-const Modal = ({ job, onClose, onUpdate, onDelete }) => {
-  const [title, setTitle] = useState(job.title);
-  const [description, setDescription] = useState(job.description);
-  const [client, setClient] = useState(job.client);
-  const [status, setStatus] = useState(job.status);
-  const [whatsappNumber, setWhatsappNumber] = useState(job?.whatsapp_number || '');
-  const [email, setEmail] = useState(job?.email || '');
-  const [fileLink, setFileLink] = useState(job?.file_link || ''); // Estado para o link do arquivo
+const Modal = ({ job, onClose, onUpdate, onArchive }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [client, setClient] = useState('');
+  const [status, setStatus] = useState('pending'); // Padrão para 'pending'
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [fileLink, setFileLink] = useState('');
 
+  // Atualiza os estados quando o job muda
   useEffect(() => {
     if (job) {
       setTitle(job.title);
@@ -22,6 +23,7 @@ const Modal = ({ job, onClose, onUpdate, onDelete }) => {
     }
   }, [job]);
 
+  // Lida com o envio do formulário para editar o job
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -33,37 +35,36 @@ const Modal = ({ job, onClose, onUpdate, onDelete }) => {
       status,
       whatsapp_number: whatsappNumber,
       email,
-      file_link: fileLink, // Atualiza o campo file_link
+      file_link: fileLink,
     };
 
-    onUpdate(updatedJob);
-    onClose();
+    onUpdate(updatedJob); // Chama a função de atualização
+    onClose(); // Fecha o modal
   };
 
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("Tem certeza de que deseja excluir este job?");
-    if (!confirmDelete) return;
-  
+  // Lida com a ação de arquivar o job
+  const handleArchive = async () => {
+    const confirmArchive = window.confirm("Tem certeza de que deseja arquivar este job?");
+    if (!confirmArchive) return;
+
     try {
-      const response = await fetch(`http://localhost:8000/api/jobs/<int:pk>/delete/`, {
-        method: "DELETE",
-      });
-  
-      if (response.ok || response.status === 204) { // Verifica se o status é 200 ou 204
-        alert("Job excluído com sucesso!");
-        onDelete(job.id); // Remove o job do estado da lista
-        onClose(); // Fecha o modal
-      } else {
-        const errorMessage = await response.text(); // Captura a mensagem detalhada da resposta
-        alert(`Erro ao excluir o job: ${errorMessage || "Resposta inesperada do servidor"}`);
-        console.error("Resposta do servidor:", errorMessage);
-      }
+        const response = await fetch(`http://localhost:8000/api/jobs/${job.id}/archive/`, {
+            method: "PATCH",
+        });
+
+        if (response.ok) {
+            alert("Job arquivado com sucesso!");
+            onArchive(job.id); // Chama a função para atualizar o estado no componente pai
+            onClose(); // Fecha o modal
+        } else {
+            const errorMessage = await response.json();
+            alert(`Erro ao arquivar o job: ${errorMessage.detail || "Resposta inesperada do servidor"}`);
+        }
     } catch (error) {
-      console.error("Erro ao excluir o job:", error);
-      alert("Erro ao tentar excluir o job. Verifique sua conexão com o servidor.");
+        alert("Erro ao tentar arquivar o job. Verifique sua conexão com o servidor.");
+        console.error("Erro de conexão:", error);
     }
-  };
-  
+};
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -116,6 +117,7 @@ const Modal = ({ job, onClose, onUpdate, onDelete }) => {
             onChange={(e) => setFileLink(e.target.value)}
             placeholder="Link do arquivo"
           />
+          
           {fileLink && (
             <a href={fileLink} target="_blank" rel="noopener noreferrer">
               Visualizar arquivo
@@ -124,11 +126,11 @@ const Modal = ({ job, onClose, onUpdate, onDelete }) => {
 
           <button type="submit">Salvar</button>
         </form>
-        <button className="delete-button" onClick={handleDelete}>
-          Excluir Job
-        </button>
         <button className="close-button" onClick={onClose}>
           Fechar
+        </button>
+        <button className="archive-button" onClick={handleArchive}>
+          Arquivar Job
         </button>
       </div>
     </div>
@@ -136,3 +138,4 @@ const Modal = ({ job, onClose, onUpdate, onDelete }) => {
 };
 
 export default Modal;
+

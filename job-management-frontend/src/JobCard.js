@@ -1,7 +1,8 @@
+// JobCard.js
 import React from "react";
 import "./JobCard.css";
 
-const JobCard = ({ job, onEdit }) => {
+const JobCard = ({ job, onEdit, onArchive}) => {
   const getClassByStatus = (status) => {
     switch (status) {
       case "pending":
@@ -25,22 +26,13 @@ const JobCard = ({ job, onEdit }) => {
       <p><strong>Email:</strong> {job.email}</p>
       {job.link && (
         <div>
-          {job.link.endsWith(".jpg") || job.link.endsWith(".png") || job.link.endsWith(".jpeg") ? (
-            <a href={job.link} target="_blank" rel="noopener noreferrer">
-              <img
-                src={job.link}
-                alt="Preview"
-                style={{ maxWidth: "100px", borderRadius: "5px" }}
-              />
-            </a>
-          ) : (
-            <a href={job.link} target="_blank" rel="noopener noreferrer">
-              Abrir arquivo
-            </a>
-          )}
+          <a href={job.link} target="_blank" rel="noopener noreferrer">
+            Abrir arquivo
+          </a>
         </div>
       )}
       <button onClick={onEdit}>Editar</button>
+      <button onClick={onArchive}>Arquivar</button> {/* Botão para arquivar */}
     </div>
   );
 };

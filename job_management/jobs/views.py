@@ -1,8 +1,8 @@
+from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework import generics, status
-from rest_framework.generics import DestroyAPIView
-from .serializers import JobSerializer
+from rest_framework import status
 from .models import Job
+from .serializers import JobSerializer
 
 
 # View para criar um job
@@ -37,11 +37,11 @@ class JobUpdateView(generics.UpdateAPIView):
     serializer_class = JobSerializer
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        job = self.get_object()  # Obtém o job baseado no ID na URL
+        serializer = self.get_serializer(job, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
         return Response(
             {
                 "message": "Job atualizado com sucesso!",
@@ -51,15 +51,25 @@ class JobUpdateView(generics.UpdateAPIView):
         )
 
 
-# View para deletar um job
-class JobDeleteView(DestroyAPIView):
+class JobArchiveView(generics.UpdateAPIView):
     queryset = Job.objects.all()
     serializer_class = JobSerializer
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
+    def update(self, request, *args, **kwargs):
+        job = self.get_object()  # Obtém o job baseado no ID na URL
+        job.is_archived = True  # Mover para arquivado
+        job.save()
         return Response(
-            {"message": "Job deletado com sucesso!"},
-            status=status.HTTP_204_NO_CONTENT
+            {
+                "message": "Job arquivado com sucesso!",
+                "job": JobSerializer(job).data,
+            },
+            status=status.HTTP_200_OK
         )
+
+
+
+
+class ArchivedJobListView(generics.ListAPIView):
+    queryset = Job.objects.filter(is_archived=True)
+    serializer_class = JobSerializer
